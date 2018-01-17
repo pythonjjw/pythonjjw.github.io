@@ -36,7 +36,7 @@ def click_case_create_item(Screen_coord=None,Picture_descrip=None,Click_descrip=
     if(Picture_shot!=None):
         f=open(Picture_shot,'rb') #二进制方式打开图文件
         ls_f=base64.b64encode(f.read()) #读取文件内容，转换为base64编码
-        Picture_shot=str(ls_f)
+        Picture_shot=str(ls_f , encoding='utf-8')#转换成真正的字符串
     click_case.create(Screen_coord=Screen_coord
                      ,Picture_descrip=Picture_descrip
                      ,Click_descrip=Click_descrip
@@ -56,26 +56,29 @@ def click_case_updata_item(click_case_ID,Screen_coord=None,Picture_descrip=None,
     else:
         pass
     click_case.update(Screen_coord=Screen_coord,Picture_descrip=Picture_descrip,Click_descrip=Click_descrip,Picture_shot=Picture_shot).where(click_case.id==click_case_ID ).execute()
+
+
+
 #查询数据
 def click_case_query_item(Screen_coord="null",Picture_descrip="null",Click_descrip="null",Picture_shot="null"):
     if(Picture_shot!=None):
         f=open(Picture_shot,'rb') #二进制方式打开图文件
         ls_f=base64.b64encode(f.read()) #读取文件内容，转换为base64编码
-        Picture_shot=str(ls_f)
+        Picture_shot=str(ls_f, encoding='utf-8')
     else: 
         pass
-    str2 = click_case.select().where(
+    result_list = click_case.select().where(
     (click_case.Screen_coord==Screen_coord)|(click_case.Click_descrip==Click_descrip)
     |(click_case.Picture_descrip==Picture_descrip)|(click_case.Picture_shot==Picture_shot))
-    if(len(str2)!=0):
-        for i in str2:  
-            imgdata=base64.b64decode(b"i.Picture_shot")  
-            file=open('1.gif','wb')  
-            file.write(imgdata)  
-            file.close()  
-            print (i.Screen_coord,i.Picture_descrip,i.Click_descrip)
-    else:
-        pass
+    for line in result_list:
+        Picture_shot = bytes(line.Picture_shot, encoding='utf-8')
+        imgdata=base64.b64decode(line.Picture_shot)
+        file=open('query_result.gif','wb')  
+        file.write(imgdata)  
+        file.close()  
+        print (line.Screen_coord,line.Picture_descrip,line.Click_descrip)
+
+
 
 #增加数据
 def pos_case_create_item(Lat=None,lon=None,descrip=None):
@@ -95,12 +98,12 @@ def pos_case_updata_item(pos_case_ID,Lat=None,lon=None,descrip=None):
 
 #查询数据
 def pos_case_query_item(Lat="null",lon="null",descrip="null"):
-    str2 = pos_case.select().where(
+    result_list = pos_case.select().where(
     (pos_case.Lat==Lat)
     |(pos_case.descrip==descrip)
     |(pos_case.lon==lon))
-    for i in str2:
-        print (i.Lat,i.descrip,i.lon)
+    for line in result_list:
+        print (line.Lat,line.descrip,line.lon)
 
 #增加数据，通过数据进行自动增加
 def evaluation_case_create_item(Tes_locate=None,point_descrip=None,descrip=None):
@@ -119,12 +122,12 @@ def evaluation_case_updata_item(evaluation_case_ID,Tes_locate=None,point_descrip
 
 #查询数据，可以该表的任意一个或多个字段进行查询
 def evaluation_case_query_item(Tes_locate="null",point_descrip="null",descrip="null"):
-    str2 = evaluation_case.select().where(
+    result_list = evaluation_case.select().where(
     (evaluation_case.Tes_locate==Tes_locate)
     |(evaluation_case.descrip==descrip)
     |(evaluation_case.point_descrip==point_descrip))
-    for i in str2:
-        print (i.Tes_locate,i.descrip,i.point_descrip)
+    for line in result_list:
+        print (line.Tes_locate,line.descrip,line.point_descrip)
 
 
 
@@ -162,10 +165,10 @@ def main():
     #建立三个表格
     # TO.DO   需要表格存在，需要判断当前表格是不是当前的格式，表格需要进行修改，如果表格不存在，则表格需要创建
     #改函数加上Ture参数后，peewee将在创建它之前检查该表格是否存在
-    db.create_tables([click_case, pos_case,evaluation_case])
+    db.create_tables([click_case, pos_case,evaluation_case],True)
 
-    click_case_create_item("xing","ming","xiao",'D:\work\peewee_work\shot_screen.gif')
-    click_case_query_item(Picture_shot='D:\work\peewee_work\shot_screen.gif')
+    click_case_create_item("xing","ming","xiao",'shot_screen1.png')
+    click_case_query_item(Picture_shot='shot_screen1.png')
     # pos_case_create_item("xing","ming","xiao")
     # pos_case_create_item("xing","hajs","sjjw")
     # pos_case_create_item("xing","ming","xiao")
