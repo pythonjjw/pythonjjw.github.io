@@ -1,0 +1,318 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@include file="/WEB-INF/webpage/common/taglibs.jspf"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="decorator" content="form"/> 
+    <html:css name="jquery-ztree"/>
+    <html:js  name="jquery-ztree"/>
+</head>
+<body class="white-bg">
+
+<label style="float:right"><a id="addProductType" onclick="addProductType();">新建</a></label>
+	<ul id="treeObj" class="ztree"></ul>
+	<script type="text/javascript">
+        var treeObj;
+        var flag=false
+        var btndesc = new Array('确定', '关闭');
+        //新建产品类别
+        function addProductType(){
+        	var url="${adminPath}/product/productType/addProductType";
+        	top.layer.open({
+                type: 2,
+                area: ["500px", "300px"],
+                title: "新增类别",
+                maxmin: true, //开启最大化最小化按钮
+                content: url,
+                btn: btndesc,
+                yes: function (index, layero) {
+                	var iframeWin = layero.find('iframe')[0];
+                	iframeWin.contentWindow.doSubmit(function () {
+                        //判断逻辑并关闭
+                        setTimeout(function () {
+                        parent.layer.close(index);//关闭当前页
+                        location.reload();
+                        }, 100);
+                	});
+                	
+                },
+                cancel:function (index, layero) {
+                }
+            });
+        	
+        }
+		var setting = {
+			check: {
+				enable:flag,
+				chkboxType:  { "Y": "${chkboxType}", "N": "${chkboxType}" }
+			},
+			edit:{
+				  enable: true,
+		            editNameSelectAll: true,
+		            showRemoveBtn: true,
+		            removeTitle: "删除节点",
+		            showRenameBtn: true,
+		            renameTitle: "编辑节点"
+	
+	        },
+	        view: {
+	            addHoverDom: addHoverDom, //移入节点显示编辑按钮
+	            removeHoverDom: removeHoverDom,  //移入节点显示编辑按钮
+	            dblClickExpand: false,//双击节点时，是否自动展开父节点的标识
+	            showLine: true,//是否显示节点之间的连线
+	            fontCss:{'color':'black','font-weight':'bold'},//字体样式函数
+	            selectedMulti: true //设置是否允许同时选中多个节点
+	        },
+			data: {
+				key: {
+					url: "notarget",
+					icon: "notarget"
+				},
+				simpleData: {
+					enable: true,
+					idKey: "id",
+					pIdKey: "parentId",
+					rootPId: 0
+				}
+			},
+		    callback: {
+		    	beforeRemove: beforeRemove,  //移除前
+	            beforeRename: beforeRename,   //重命名前
+	            onRename: onRename,
+	            beforeDrag:beforeDrag,
+
+		        onClick: function(event, treeId, treeNode) {
+		        	treeObj.expandNode(treeNode);
+		        },
+		        onCheck: function(e, treeId, treeNode) {
+		            var nodes = treeObj.getCheckedNodes(true);
+		            for (var i = 0; i < nodes.length; i++) {
+		            	treeObj.expandNode(nodes[i], true, false, false);
+		            }
+		            return false;
+		        },
+		        onAsyncSuccess: function(event, treeId, treeNode, msg) {
+		            var nodes = treeObj.getNodesByParam("parentId", treeNode.id, null);
+		            for (var i = 0,
+		            l = nodes.length; i < l; i++) {
+		                try {
+		                    treeObj.checkNode(nodes[i], treeNode.checked, true);
+		                } catch(e) {}
+		            }
+		            selectCheckNode();
+		        },
+		        onDblClick: function() {
+		        	 
+		        }
+		    }
+		};
+		//获取数据
+		var dataUrl="${adminPath}/product/productType/treeData";
+		$(document).ready(function(){
+			console.log("dataUrl="+dataUrl)
+			$.ajax({  
+			       type : "post",  
+			       url : dataUrl,  
+			       dataType : "json",  
+			       //data:{key:'1'},
+			       success : function(data) {
+			    	   var nodes=data.results;
+			    	   initTree(setting,nodes);
+			       }
+			});
+		});
+		//用获取的数据初始化树
+		function initTree(setting,nodes){
+			treeObj=$.fn.zTree.init($("#treeObj"), setting, nodes);
+			// 默认展开一级节点
+	        var nodes = treeObj.getNodesByParam("level", 0);
+	        for (var i = 0; i < nodes.length; i++) {
+	        	treeObj.expandNode(nodes[i], true, false, false);
+	        }
+			initSelectNode();
+		}
+		
+		function initSelectNode(){
+			var selectNodeIds="${selectNodes}".split(",");
+			for(var i=0; i<selectNodeIds.length; i++) {
+				var nodeid=selectNodeIds[i];
+				var node = treeObj.getNodeByParam("id", nodeid);
+				if (flag) {
+		            try {
+		            	treeObj.checkNode(node, true, false);
+		            } catch(e) {}
+		            treeObj.selectNode(node, false);
+		        } else {
+		        	treeObj.selectNode(node, true);
+		        }
+			}
+		}
+		//鼠标移入节点，显示编辑按钮
+	    function addHoverDom(treeId, treeNode) {  //treeNode是当前hover的节点信息
+	        var sObj = $("#" + treeNode.tId + "_span");
+	        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.tId).length > 0) return;
+	        var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
+	            + "' title='添加节点' onfocus='this.blur();'></span>";
+	        sObj.after(addStr);
+	        var btn = $("#addBtn_" + treeNode.tId);
+	        //当点击添加按钮时：
+	        if (btn) btn.bind("click", function () {
+	            var zTree = $.fn.zTree.getZTreeObj("#treeObj");
+	            console.log("treeNode.id="+treeNode.id);
+	            var name;
+	            var url="${adminPath}/product/productType/addProductType";
+	            top.layer.open({
+	                type: 2,
+	                area: ["500px", "300px"],
+	                title: "新增子类别",
+	                maxmin: true, //开启最大化最小化按钮
+	                content: url,
+	                btn: btndesc,
+	                yes: function (index, layero) {
+	                	var iframeWin = layero.find('iframe')[0];
+	                	name=iframeWin.contentWindow.$("#name").val();
+	                	parent.layer.close(index);
+	    	            var newNode;
+	    	            //发送请求保存一个新建的节点，后台返回ID，用返回的ID新增节点
+	    	            
+	    	            var data = {
+	    	                "code": treeNode.id,
+	    	                "name": name
+	    	            };
+	    	            $.ajax({
+	    	                type: 'post',
+	    	                url: "${adminPath}/product/productType/addSubNode",
+	    	                data: data,
+	    	                timeout: 1000, //超时时间设置，单位毫秒
+	    	                dataType: 'json',
+	    	                success: function (res) {
+	    	                	if(res.ret==0){
+			                		swal("提示！", "添加子节点成功", "success");
+			                		location.reload();
+			                	}else{
+			                		swal("提示！", "添加子节点失败", "error");
+			                	}
+	    	                }
+	    	            });
+	                },
+	                cancel:function (index, layero) {
+	                }
+	            });
+	            
+	            return false;
+	        });
+	    }
+	    //修改节点之前
+	    function beforeRename(treeId, treeNode, newName) {
+	        if (newName.length == 0) {
+	        	 swal("提示！", "节点名称不能为空.", "error");
+	            var zTree = $.fn.zTree.getZTreeObj("treeObj");
+	            setTimeout(function () {
+	                zTree.editName(treeNode)
+	            }, 10);
+	            return false;
+	        }
+	        return true;
+	    }
+	    //修改节点信息
+	    function onRename(event, treeId, treeNode, isCancel) {
+	        if (isCancel) {
+	            return;
+	        }
+	        var zTree = $.fn.zTree.getZTreeObj("treeObj");
+	        var onodes = zTree.getNodes()
+	        console.log(onodes);
+	        //发送请求修改节点信息
+	        var data = {
+	            "id": treeNode.id,
+	            "code": treeNode.parentId,  //父节点
+	            "name": treeNode.name,
+	        };
+	        $.ajax({
+	            type: 'post',
+	            url: "${adminPath}/product/productType/reName",
+	            data: data,
+	            timeout: 1000, //超时时间设置，单位毫秒
+	            dataType: 'json',
+	            success: function (res) {
+	            	if(res.ret==0){
+                		swal("提示！", "修改成功", "success");
+                	}else{
+                		swal("提示！", "修改失败", "error");
+                	}
+	            }
+	        });
+	    }
+	    //删除节点
+	    function removeHoverDom(treeId, treeNode) {
+	        $("#addBtn_" + treeNode.tId).unbind().remove();
+	    };
+	    function beforeDrag(){
+	        return false;  //禁止所有拖拽功能
+	    }
+	  //删除之前的判断
+	    function beforeRemove(treeId, treeNode) {
+	    	var url="${adminPath}/product/productType/{id}/delete";
+	    	var urls="${adminPath}/product/productType/{id}/deleteBatch";
+	    	var id=treeNode.id;
+	        url=url.replace("{id}",id);
+	        urls=urls.replace("{id}",id);
+	        var tipMsg="确认删除 节点 -- " + treeNode.name + " 吗？"
+	        if(treeNode.isParent){
+	            swal({
+		            title: "提示",
+		            text: "该节点下有子节点，您是否继续删除？",
+		            type: "warning",
+		            showCancelButton: true,
+		            confirmButtonColor: "#DD6B55",
+		            confirmButtonText: "确定",
+		            closeOnConfirm: false,
+		            cancelButtonText: "取消",
+		        }, function () {
+			        	 $.ajax({
+				                type: 'post',
+				                url: urls,
+				                timeout: 1000, //超时时间设置，单位毫秒
+				                dataType: 'json',
+				                success: function (res) {
+				                	if(res.ret==0){
+				                		swal("提示！", "删除成功", "success");
+				                		location.reload()
+				                	}else{
+				                		swal("提示！", "删除失败", "error");
+				                	}
+				                }
+				            });
+		        });
+	            return;
+	        }
+	        swal({
+	            title: "提示",
+	            text: tipMsg,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "确定",
+	            closeOnConfirm: false,
+	            cancelButtonText: "取消",
+	        }, function () {
+	        	 $.ajax({
+		                type: 'post',
+		                url: url,
+		                timeout: 1000, //超时时间设置，单位毫秒
+		                dataType: 'json',
+		                success: function (res) {
+		                	if(res.ret==0){
+		                		swal("提示！", "删除成功", "success");
+		                	}else{
+		                		swal("提示！", "删除失败", "error");
+		                	}
+		                }
+		            });
+	        });
+	        
+	    }  
+	  
+	</SCRIPT>
+</body>
+</html>
