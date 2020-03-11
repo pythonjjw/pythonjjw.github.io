@@ -28,7 +28,6 @@
 			margin-bottom:0px;
 		}
 	</style>
-	<script type="text/javascript" src="${staticPath}/common/js/iframe.js"></script>
 	<script>
         $(function() {
             $("select").attr("disabled", true);
@@ -36,12 +35,12 @@
             $(".localpanelhead").each(function(){
                 $(this).click(function () {
                     var name = $(this).find("span").eq(0).text();
-                    if(name=='收起'){
-                        $(this).find("span").eq(0).text("展开")
+                    if(name=='close'){
+                        $(this).find("span").eq(0).text("open")
                         $(this).parent().addClass("active");
                         $(this).parent().parent().find(".panel-body").eq(0).hide();
                     }else{
-                        $(this).find("span").eq(0).text("收起")
+                        $(this).find("span").eq(0).text("close")
                         $(this).parent().removeClass("active");
                         $(this).parent().parent().find(".panel-body").eq(0).show();
                     }
@@ -59,46 +58,40 @@
 		<div class="page-content">
 			<table class="commonInfo" style="margin-left: 5px; height: 39px;">
 			     <tr>
-				<td style="width:200px"><label>印刷订单：</label>
-							<span><font color="red">${data.orderNo}</font></span>
+				<td style="width:200px"><label>名称：</label>
+							<span><font color="red">${data}</font></span>
 					</td>
-					<td style="width:200px"><label>制单人：</label>
-						<span>${username}</span>
+					<td style="width:200px"><label>名称：</label>
+						<span>${data}</span>
 					</td>
-					<td style="width:260px"><label>制单时间：</label>
-						<span>${createDate}</span>
+					<td style="width:260px"><label>名称：</label>
+						<span>${data}</span>
 					</td>
 			     </tr>
 		       </table>
 		</div>
-		<!--印件信息------------------------------------------------------------------------------->
-		<jsp:include page="../businessorder/preview-basic2.jsp"></jsp:include>
-		<!--产品信息------------------------------------------------------------------------------->
-		<c:forEach items="${productList }" var="product" varStatus="status">
-<div>
-  <div id="basicPanel" class="panel panel-default" style="display:${hideBasic eq "1" ? "none" : "block"}">
+<c:forEach items="${productList }" var="product" varStatus="status">
+  <div>
+     <div id="basicPanel" class="panel panel-default" style="display:${hideBasic eq "1" ? "none" : "block"}">
 	<div class="panel-heading">
            <strong>${product.productName }</strong>
-	      <a href="#" class="pull-right localpanelhead"><span class="pull-right">收起</span><span class="fa arrow fa-2x"></span></a>
+	      <a href="#" class="pull-right localpanelhead"><span class="pull-right">close</span><span class="fa arrow fa-2x"></span></a>
 	   </div>
 	<div class="panel-body">
 	   <table class="commonInfo">
 		<tr>
-		    <td class="label-right" style='width:90px;' >产品名称：</td>
-		    <td colspan="7"><label>${product.productName }</label></td>
-		    <td class="label-right">印件类型：</td>
+		    <td class="label-right" style='width:90px;' >属性：</td>
+		    <td colspan="7"><label>${product }</label></td>
+		    <td class="label-right">属性：</td>
 		    <td><label id="orderTypeName"><c:choose>
-			<c:when test="${product.orderType==1}">
-				画册
+			<c:when test="${product==1}">
+				product
 			</c:when>
-			<c:when test="${product.orderType==2}">
-				名片
-			</c:when>
-			<c:when test="${product.orderType==3}">
-				单页
+			<c:when test="${product==2}">
+				product
 			</c:when>
 			<c:otherwise>
-				图书
+				属性
 			</c:otherwise>
 			</c:choose></label>
 		   </td>
@@ -106,93 +99,53 @@
 		<c:choose>
 		<c:when test="${product.orderType==1}">
 		   <tr>
-		      <td class="label-right">成品尺寸：</td>
-		      <td><label>${product.mediaSize}</label></td>
-		      <td class="label-right">开本：</td>
-		      <td><label>${product.bookSize}<c:if test="${product.bookSize !=''}">开</c:if></label></td>
-		      <td class="label-right">订购数量：</td>
-		      <td><label>${product.printingQuantity}</label></td>
-		      <td class="label-right">左翻\右翻：</td>
-		      <td><label>${product.leftRight}</label></td>
-		      <td class="label-right">勒口：</td>
-	              <td ><label>${product.flapSize}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}<c:if test="${product !=''}">开</c:if></label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+		      <td class="label-right">属性：</td>
+	              <td ><label>${product}</label></td>
 		   </tr>
 
 		   <tr class="card">
-		      <td class="label-right" > 封套：</td>
-		      <td><label>${product.fengTao}</label></td>
+		      <td class="label-right" > 属性：</td>
+		      <td><label>${product}</label></td>
 	           </tr>
 		</c:when>
-		<c:when test="${product.orderType==2}">
+		<c:when test="${product==2}">
 		   <tr>
-		      <td class="label-right">成品尺寸：</td>
-		      <td><label>${product.mediaSize}</label></td>
-		      <td class="label-right">订购数量：</td>
-		      <td><label>${product.printingQuantity}</label></td>
-		      <td class="label-right">每盒张数：</td>
-		      <td><label>${product.cartonNumber}</label></td>
-		  </tr>
-		</c:when>
-		<c:when test="${product.orderType==3}">
-		  <tr>
-		      <td class="label-right">成品尺寸：</td>
-		      <td><label>${product.mediaSize}</label></td>
-                      <td class="label-right">订购数量：</td>
-		      <td><label>${product.printingQuantity}</label></td>
-		      <td class="label-right">左翻\右翻：</td>
-		      <td><label>${product.leftRight}</label></td>
-		      <td class="label-right">勒口：</td>
-                      <td><label>${product.flapSize}</label></td>
-		      <td class="label-right" > 封套：</td>
-		      <td><label>${product.fengTao}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
 		  </tr>
 		</c:when>
 		<c:otherwise>
 		<tr>
-		      <td class="label-right">成品尺寸：</td>
-		      <td><label>${product.mediaSize}</label></td>
-		      <td class="bookAndDraw label-right">开本：</td>
-		      <td  class="bookAndDraw">
-		      <label>${product.bookSize}<c:if test="${product.bookSize !=''}">开</c:if></label></td>
-		      <td class="label-right">订购数量：</td>
-		      <td><label>${product.printingQuantity}</label></td>
-		      <td class="label-right">左翻\右翻：</td>
-		      <td><label>${product.leftRight}</label><td class="label-right">勒口：</td>
-		      <td ><label>${product.flapSize}</label></td>
-		</tr>
-		<tr>
-		      <td class="label-right" > 封套：</td>
-		      <td><label>${product.fengTao}</label></td>
-		      <td class="label-right">印张：</td>
-		      <td><label>${product.sheet}</label></td>
-		      <td class="label-right">版次印次：</td>
-		      <td><label>${product.edition}</label></td>
-		      <td class="label-right"> 书号：</td>
-		      <td ><label style="width:150px">${product.isbn}</label></td>
-		      <td class="label-right"> 定价：</td>
-		      <td><label>${product.bookPrice}</label></td>
-		</tr>
-		<tr>
-                      <td class="label-right">包装：</td>
-		      <td><label>${zBusinessOrderBasic.wrap}</label></td>
-		      <td class="label-right">本厂标记：</td>
-		      <td><label>${product.factoryMark}</label></td>
-             </tr>
+		      <td class="label-right">属性：</td>
+		      <td><label>${product}</label></td>
+               </tr>
 	 </c:otherwise>
      </c:choose>
 </table>
 <table class="commonInfo">
      <tr>
-	  <td class="label-right">印装次序：</td>
-	  <td><span> ${product.bindingSequence }</span></td>
+	  <td class="label-right">属性：</td>
+	  <td><span> ${product }</span></td>
      </tr>
      <tr>
-	  <td class="label-right">装订工艺：</td>
-	  <td><span> ${product.bindProcess }</span></td>
+	  <td class="label-right">属性：</td>
+	  <td><span> ${product }</span></td>
      </tr>
      <tr>
-          <td class="label-right">备注：</td>
-	  <td><span> ${product.remarks }</span></td>
+          <td class="label-right">属性：</td>
+	  <td><span> ${product }</span></td>
      </tr>
 </table>
 <c:if test="${!empty product.partTaskMap}">
@@ -203,7 +156,7 @@
 	    <table class="innerTable" style="width: 100%; margin-left: 0px;">
 	         <thead>
 	             <tr>
-		         <th>部件</th> <th>生产环节</th> <th>任务</th> <th>状态</th> <th>应产数</th> <th>已报工数量</th>
+		         <th>部件</th> <th>数量</th> <th>任务</th> <th>状态</th> <th>可以</th> <th>内容</th>
 		     </tr>
 		 </thead>
     <tbody>
@@ -220,13 +173,13 @@
 			<c:if test="${ objIndex.index==0}">
                              <td rowspan="${fn:length(reportMapObj.value) }">${reportMapObj.key }</td>
 			</c:if>													 
-                              <td>${obj.taskName}</td>
+                              <td>${obj.name}</td>
 																	 
-                              <td>${obj.taskStatus}</td>
+                              <td>${obj.statuss}</td>
 																	 
-                              <td>${obj.actualPrintAmount}</td>
+                              <td>${obj.printAmount}</td>
 																	 
-                              <td>${obj.printedAmount}</td>
+                              <td>${obj.amount}</td>
 		     </tr>
 		  </c:forEach>
 	       </c:forEach>
