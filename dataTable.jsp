@@ -53,22 +53,22 @@
 						<thead>
 						<tr>
 							<th style="width:20px;">ID</th>
-							<th style="width:80px;">印刷订单号</th>
-							<th style="width:80px;">客户名称</th>
-							<th style="width:100px;">印件名称</th>
-							<th style="width:80px;">产品名称</th>
-							<th style="width:80px;">成品尺寸</th>
-							<th style="width:50px;">部件</th>
-							<th style="width:100px;">任务名称</th>
-							<th style="width:100px;">纸张</th>
-							<th style="width:80px;">库存数量</th>
-							<th style="width:60px;">应产数</th>
-							<th style="width:90px;">已完成数量</th>
-							<th style="width:80px;">本次报工数</th>
-							<th style="width:100px;">报工人</th>
-							<th style="width:70px;">处理用时</th>
-							<th style="width:80px;">备注</th>
-							<th style="width:70px;">工序完成</th>
+							<th style="width:80px;">号</th>
+							<th style="width:80px;">名称</th>
+							<th style="width:100px;">名称</th>
+							<th style="width:80px;">名称</th>
+							<th style="width:80px;">尺寸</th>
+							<th style="width:50px;">件</th>
+							<th style="width:100px;">名称</th>
+							<th style="width:100px;">张</th>
+							<th style="width:80px;">数量</th>
+							<th style="width:60px;">数</th>
+							<th style="width:90px;">数量</th>
+							<th style="width:80px;">数</th>
+							<th style="width:100px;">人</th>
+							<th style="width:70px;">用时</th>
+							<th style="width:80px;">注</th>
+							<th style="width:70px;">完成</th>
 							<th style="width:60px;">操作</th>
 						</tr>
 						</thead>
@@ -156,7 +156,7 @@
                 { "data": "productName" },
                 { "data": "mediaSize" },
                 { "data": "partName" },
-				{ "data": "taskName" },
+		{ "data": "taskName" },
                 { "data": "paperName" },
                 { "data": "actualAmount" },
                 { "data": "actualPrintAmount" },
@@ -277,7 +277,7 @@
             var producibleAmount=Number(actualPrintAmount)-Number(printedAmount);
             var finishedAmount=$(eleTr).find("td:eq(12)").find("input").val();
             if(producibleAmount<Number(finishedAmount)){
-                top.layer.alert("本次报工数量大于可报工数量", {
+                top.layer.alert("不对！", {
                     icon : 0,
                     title : '提示'
                 });
